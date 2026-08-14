@@ -439,8 +439,8 @@
                 <img id="profileImg" src="https://scontent.cdninstagram.com/v/t51.82787-19/753535072_18438623776192336_6385659611037142840_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=1&ccb=7-5&_nc_sid=f7ccc5&_nc_ohc=eCmnGj9TPFIQ7kNvgHJjVLa&_nc_oc=Adi3_vxq1vE3LvAy_aQ9Jq_LYX4QiVCKXt3PCR6H8YmCPVyLmJnP&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=AWEpn69kfoi11emrMk_Ngg&oh=00_AQE3Zs4N5ZY7LhJqL0ZfZ0zpaRMZvuqrB6d-itQa9GYt068H0Pg&oe=6A8540F2" alt="Jackie" onerror="this.src='./sbt.png'">
             </div>
 
-            <div class="dj-name">Jackie</div>
-            <div class="dj-role">DJ / Animador</div>
+            <div class="dj-name">Carregando...</div>
+            <div class="dj-role">Carregando...</div>
         </div>
 
         <p class="message">
@@ -448,7 +448,7 @@
         </p>
 
         <div class="button-group">
-            <a href="https://www.instagram.com/jackie_ferreira90?igsh=d2I0YmpiMW5hb2t4" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
                 Seguir no Instagram
             </a>
 
@@ -463,9 +463,70 @@
     </div>
 
     <script>
+        // Carregar configurações dinamicamente
+        async function loadConfig() {
+            try {
+                const response = await fetch('./urls/config.json');
+                const config = await response.json();
+
+                // Atualizar nome
+                document.querySelector('.dj-name').textContent = config.name;
+
+                // Atualizar role
+                document.querySelector('.dj-role').textContent = config.role;
+
+                // Atualizar link do Instagram
+                document.querySelector('.btn-primary').href = config.instagram_url;
+
+                // Extrair username do Instagram e buscar foto
+                const instagramUrl = config.instagram_url;
+                const usernameMatch = instagramUrl.match(/instagram\.com\/([^/?]+)/);
+
+                if (usernameMatch) {
+                    const username = usernameMatch[1];
+                    loadInstagramProfilePic(username);
+                }
+
+                // Atualizar meta tags
+                document.querySelector('meta[property="og:title"]').setAttribute('content', `Peça sua música - ${config.name} 🎵`);
+                document.querySelector('meta[property="og:description"]').setAttribute('content', `Siga ${config.name} no Instagram e peça sua música favorita para a festa!`);
+            } catch (error) {
+                console.error('Erro ao carregar config.json:', error);
+            }
+        }
+
+        // Buscar foto de perfil do Instagram
+        async function loadInstagramProfilePic(username) {
+            try {
+                const response = await fetch(`https://www.instagram.com/${username}/?__a=1`, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0'
+                    }
+                }).catch(() => null);
+
+                if (response && response.ok) {
+                    const data = await response.json();
+                    const profilePic = data.graphql?.user?.profile_pic_url_hd || data.user?.profile_pic_url_hd;
+
+                    if (profilePic) {
+                        document.getElementById('profileImg').src = profilePic;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.log('Não conseguiu carregar foto do Instagram');
+            }
+
+            // Fallback para imagem local
+            document.getElementById('profileImg').src = './sbt.png';
+        }
+
         function handleMusicRequest() {
             alert('🎵 SISTEMA PRONTO\n\nSiga no Instagram primeiro e depois volte para pedir sua música!');
         }
+
+        // Carregar configurações ao iniciar
+        window.addEventListener('load', loadConfig);
 
         // Efeito de glitch aleatório
         setInterval(() => {
